@@ -1,12 +1,12 @@
-// ********************************************************* 
-// Course: TCP1101 PROGRAMMING FUNDAMENTALS 
-// Year: Trimester 1, 2022/23 (T2215) 
-// Lab: TT6L 
+// *********************************************************
+// Course: TCP1101 PROGRAMMING FUNDAMENTALS
+// Year: Trimester 1, 2022/23 (T2215)
+// Lab: TT6L
 // Names: DOAA NOAH| ALHALAH RAED | ALHAWBANI HUSAM
-// IDs: 1211310715 | 1221302663 | 1221303182 
-// Emails: 1211310715@student.mmu.edu.my | 1221302663@student.mmu.edu.my  | @student.mmu.edu.my  
+// IDs: 1211310715 | 1221302663 | 1221303182
+// Emails: 1211310715@student.mmu.edu.my | 1221302663@student.mmu.edu.my  | 1221303182@student.mmu.edu.my
 // Phones: 116456258 | 109006407 | 166084068
-// ********************************************************* 
+// *********************************************************
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -30,15 +30,18 @@ public:
     char name;
 };
 
-int Rows = 5, Columns = 9, zombie = 1;
+int Rows = 5, Columns = 9, zombie = 1, current = 0;
 char **getboard();
-void Continue(),PlacePlayers(Alien &, char **), Settings(), boardcustom(), Placeobjects(char **), displayboard(char **), Players(Alien &, vector<Zombie> &), makeboard(Alien &a, vector<Zombie> &zombies, char **board);
- 
+int infectNearestZombie(Alien &alien, vector<Zombie> &zombies);
+void Continue(), PlacePlayers(Alien &, char **), Settings(), boardcustom(), Placeobjects(char **), displayboard(char **), alienmov(Alien &alien, char **board, vector<Zombie> &zombies), inputCommand(Alien &alien),
+    Players(Alien &, vector<Zombie> &), makeboard(Alien &a, vector<Zombie> &zombies, char **board), checkNextStop(char nextLocation, Alien &alien, vector<Zombie> &zombies), Status(Alien a, vector<Zombie> z);
 
 void Continue()
 {
     cout << "Press any key to continue..." << endl
          << endl;
+    cin.ignore();
+    cin.ignore();
 }
 
 void Settings()
@@ -81,14 +84,13 @@ void boardcustom()
     } while (Row_temp % 2 == 0 || Col_temp % 2 == 0);
     Columns = (Col_temp * 2) + 1;
     Rows = (Row_temp * 2) + 1;
-do
+    do
     {
-        if (zombie <= 0 )
+        if (zombie <= 0)
             cout << "Invalid input. Number of zombies must be a higher than 0.\n";
         cout << "Enter number of zombies => ";
         cin >> zombie;
-    }
-    while (zombie <= 0 );
+    } while (zombie <= 0);
     Continue();
 }
 
@@ -110,16 +112,15 @@ void displayboard(char **board)
     }
 }
 
-
 void Players(Alien &a, vector<Zombie> &zombies)
 {
     a.life = rand() % 100 + 1;
-    a.attack =rand() % a.life + 1;
+    a.attack = rand() % a.life + 1;
     for (int i = 0; i < zombie; i++)
     {
         Zombie z;
         z.name = i + '1';
-        z.life = rand() % 50 + 50;        
+        z.life = rand() % 50 + 50;
         z.attack = rand() % 20 + 10;
         z.range = rand() % (min(Rows, Columns) / 2) + 1;
         z.x = rand() % (Rows - 1) | 1;
@@ -152,7 +153,7 @@ void PlacePlayers(Alien &alien, char **board)
     alien.y = Columns / 2;
     board[alien.x][alien.y] = 'A';
 }
-void PlaceZombie(vector<Zombie> &zombies,Alien alien,char **board)
+void PlaceZombie(vector<Zombie> &zombies, Alien alien, char **board)
 {
     // Place the zombies randomly on the board
     for (int i = 0; i < zombies.size(); i++)
@@ -160,6 +161,7 @@ void PlaceZombie(vector<Zombie> &zombies,Alien alien,char **board)
         bool occupied = true;
         do
         {
+
             zombies[i].x = (rand() % (Rows - 1)) | 1;
             zombies[i].y = (rand() % (Columns - 1)) | 1;
 
@@ -180,7 +182,7 @@ void PlaceZombie(vector<Zombie> &zombies,Alien alien,char **board)
 }
 void makeboard(Alien &alien, vector<Zombie> &zombies, char **board)
 {
-   
+
     for (int i = 0; i < Rows; i++)
     {
         for (int j = 0; j < Columns; j++)
@@ -210,8 +212,240 @@ void makeboard(Alien &alien, vector<Zombie> &zombies, char **board)
         }
     }
     Placeobjects(board);
-    PlacePlayers(alien,board);
-    PlaceZombie(zombies,alien,board);
+    PlacePlayers(alien, board);
+    PlaceZombie(zombies, alien, board);
+}
+
+void checkNextStops(char nextLocation, Alien &alien, vector<Zombie> &zombies)
+{
+    int zombieNumber;
+    switch (nextLocation)
+    {
+    case '^':
+    case 'v':
+    case '<':
+    case '>':
+        alien.direction = nextLocation;
+        alien.attack += 20;
+        cout << "Alien changes direction to " << nextLocation << endl;
+        break;
+    case 'h':
+        alien.life += 20;
+        cout << "Alien locates a health pack " << endl;
+        cout << "Alien's life increased by 20 " << endl
+             << endl;
+        break;
+    case 'p':
+        zombieNumber = infectNearestZombie(alien, zombies);
+        cout << "Zombie " << zombieNumber << " has been damaged by 10. " << endl;
+        break;
+    case ' ':
+    case '.':
+        cout << "Alien locates an empty space" << endl;
+        break;
+    default:
+        // invalid input
+        break;
+    }
+}
+char nonTrailObject()
+{
+    char nonTrailObjects[] = {'^', 'v', '<', '>', 'h', 'p', 'r', ' '};
+    int randomIndex = rand() % (sizeof(nonTrailObjects) / sizeof(nonTrailObjects[0]));
+    return nonTrailObjects[randomIndex];
+}
+void alienmov(Alien &alien, char **board, vector<Zombie> &zombies)
+{
+    inputCommand(alien);
+    while (true)
+    {
+        int nextX = alien.x;
+        int nextY = alien.y;
+        // calculate the next location based on the current direction
+        switch (alien.direction)
+        {
+        case '^':
+            nextX -= 2;
+            break;
+        case 'v':
+            nextX += 2;
+            break;
+        case '<':
+            nextY -= 2;
+            break;
+        case '>':
+            nextY += 2;
+            break;
+        }
+
+        if (nextX < 0 || nextX >= Rows || nextY < 0 || nextY >= Columns)
+        {
+            cout << "Alien reaches a board border, turn ended." << endl;
+            return;
+        }
+
+        char nextLocation = board[nextX][nextY];
+
+        if (nextLocation == 'r')
+        {
+            cout << "Alien hits a rock and can't move" << endl;
+
+            while (board[nextX][nextY] == 'r')
+            {
+                board[nextX][nextY] = nonTrailObject();
+            }
+
+            break;
+        }
+
+        checkNextStops(nextLocation, alien, zombies);
+        board[nextX][nextY] = 'A';
+        board[alien.x][alien.y] = '.';
+        alien.x = nextX;
+        alien.y = nextY;
+        Continue();
+        system("CLS");
+        displayboard(board);
+        Status(alien, zombies);
+    }
+}
+void inputCommand(Alien &alien)
+{
+    cout << "\n\nEnter command or help to show the menu " << endl;
+    string command;
+    cin >> command;
+    if (command == "up")
+    {
+        alien.direction = '^';
+    }
+    else if (command == "down")
+    {
+        alien.direction = 'v';
+    }
+    else if (command == "left")
+    {
+        alien.direction = '<';
+    }
+    else if (command == "right")
+    {
+        alien.direction = '>';
+    }
+    else if (command == "help")
+    {
+        cout << "Commands: up, down, left, right, help, save, load, quit" << endl;
+    }
+    else if (command == "quit")
+    {
+        cout << "Are you sure you want to quit? yes/no" << endl;
+        string confirm;
+        cin >> confirm;
+        if (confirm == "yes")
+        {
+            exit(0);
+        }
+    }
+    else
+    {
+        cout << "Invalid command. Type 'help' for a list of commands." << endl;
+    }
+    return;
+}
+int infectNearestZombie(Alien &alien, vector<Zombie> &zombies)
+{
+    int closestZombieIndex = -1;
+    int minDistance = INT_MAX;
+    for (int i = 0; i < zombies.size(); i++)
+    {
+        int distance = abs(alien.x - zombies[i].x) + abs(alien.y - zombies[i].y);
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            closestZombieIndex = i;
+        }
+    }
+    if (closestZombieIndex != -1)
+    {
+        zombies[closestZombieIndex].life -= 10;
+        cout << "Zombie " << closestZombieIndex << " has been damaged." << endl;
+    }
+    return closestZombieIndex;
+}
+void Status(Alien a, vector<Zombie> z)
+{
+    if (0 == current)
+    {
+        cout << "->  ";
+    }
+    cout << "Alien  "
+         << "  Life   : " << a.life << "    Attack: " << a.attack << endl;
+
+    for (int i = 0; i < z.size(); i++)
+    {
+        if (z[i].name - '0' == current)
+        {
+            cout << "->  ";
+        }
+
+        cout << "Zombie " << i + 1 << ":"
+             << "    Life: " << z[i].life << "     Attack: " << z[i].attack << "     Range: " << z[i].range << endl;
+    }
+    cout << endl
+         << endl;
+}
+bool valid(int x, int y, char **b)
+{
+
+    if (b[x][y] != 'A' && (b[x][y] < '1' || b[x][y] > '9'))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+void zombies_turn(Alien &alien, char **board, Zombie &zombie)
+{
+
+    int x = zombie.x;
+    int y = zombie.y;
+    char moves[4] = {'v', '^', '<', '>'};
+    int moveIndex;
+    string moveDirection;
+    do
+    {
+        moveIndex = rand() % 4;
+        char move = moves[moveIndex];
+        if (move == 'v')
+        { 
+            x = zombie.x + 2;
+            moveDirection = "Down";
+        }
+        else if (move == '^')
+        { 
+            x = zombie.x - 2;
+            moveDirection = "Up";
+        }
+        else if (move == '>')
+        { 
+            y = zombie.y + 2;
+            moveDirection = "Right";
+        }
+        else if (move == '<')
+        { 
+            y = zombie.y - 2;
+            moveDirection = "Left";
+        }
+    } while (!(valid(x, y, board)));
+
+    cout << "Zombie moves " << moveDirection << endl;
+    
+    board[zombie.x][zombie.y] = ' ';
+    zombie.x = x;
+    zombie.y = y;
+    board[zombie.x][zombie.y] = zombie.name;
+
+   
 }
 int main()
 {
@@ -223,5 +457,25 @@ int main()
     Players(a, zombies);
     makeboard(a, zombies, board);
     displayboard(board);
+    Status(a, zombies);
+    while (true)
+    {
+
+        alienmov(a, board, zombies);
+        for (int i = 0; i < zombies.size(); i++)
+        {
+            current++;
+            Continue();
+            system("CLS");
+            displayboard(board);
+            Status(a, zombies);
+
+            zombies_turn(a, board, zombies[i]);
+            Continue();
+            system("CLS");
+            displayboard(board);
+            Status(a, zombies);
+        }
+    }
     return 0;
 }
