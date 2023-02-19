@@ -17,7 +17,7 @@ the user will see a prompt which will either ask them to edit or continue with t
 the user will be asked to input the number zombies they want
 the code will then output the gameboard with objects and zombies 
 the code will ask the user to give the alien a command
-the alien will move accordingly and respond to objects along it way
+the alien will move accordingly and respond to objects along its way
 the user waits for their turn after their turn ends and the zombies begins
 
 
