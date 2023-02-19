@@ -1,10 +1,10 @@
 # Alien vs. Zombie
 
-Please introduce the game here.
+Alien vs zombies is a interactive game that asks the user to create their own unique game board and then promts them to command an alien and play againist zombies
 
-You may add one signature screenshot of your program here or above the title. Check out [this tutorial](https://www.digitalocean.com/community/tutorials/markdown-markdown-images) to learn how to do it.
+![Screenshot_20230219_101645](https://user-images.githubusercontent.com/124085307/219954165-401b1f58-1dfa-462b-a37c-5b0348ba1bc3.png)
 
-Please provide the YouTube link to your [Video Demo](https://youtu.be/gsAk6CRxtIY).
+Please provide the YouTube link to your [Video Demo](https://youtu.be/KaM5qaSt2WA).
 
 ## Compilation Instructions
 
@@ -16,6 +16,11 @@ After running the program
 the user will see a prompt which will either ask them to edit or continue with the game settings
 the user will be asked to input the number zombies they want
 the code will then output the gameboard with objects and zombies 
+the code will ask the user to give the alien a command
+the alien will move accordingly and respond to objects along it way
+the user waits for their turn after their turn ends and the zombies begins
+
+
 
 ## Progress Log
 
@@ -27,7 +32,7 @@ the code will then output the gameboard with objects and zombies
 Please replace the following with your group members' names. 
 
 - Doaa Noah
-- Alhalah Raed
-- Alhawbani Husam
+- AlHalah Raed
+- AlHawbani Husam
 
 
